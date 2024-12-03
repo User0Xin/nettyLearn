@@ -24,6 +24,9 @@
     <modules>
         <module>nioLearn</module>
         <module>nettyLearn</module>
+        <module>rtmpServer</module>
+        <module>nettyRtmpServer</module>
+        <module>javaCVLearn</module>
     </modules>
     <scm>
         <connection/>
