@@ -1,0 +1,55 @@
+FROM centos:7
+RUN curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+RUN yum clean all
+RUN yum makecache
+RUN yum update -y
+RUN yum install -y libpcre3 libpcre3-dev libssl-dev zlib1g-dev gcc gcc-c++ wget unzip vim make curl openssl openssl-devel
+# 下载nginx的http-flv模块
+RUN wget https://github.com/winshining/nginx-http-flv-module/archive/master.zip
+RUN unzip master.zip
+# 安装pcre
+RUN wget http://downloads.sourceforge.net/project/pcre/pcre/8.35/pcre-8.35.tar.gz
+RUN tar -zxvf pcre-8.35.tar.gz
+RUN cd pcre-8.35 && ./configure && make && make install
+RUN cd ../
+# 安装nginx
+RUN wget http://nginx.org/download/nginx-1.17.6.tar.gz
+RUN tar -zxvf nginx-1.17.6.tar.gz
+RUN cd nginx-1.17.6 && ./configure --add-module=../nginx-http-flv-module-master && make && make install
+# 如果是ubuntu系统，则是./configure --add-module=../nginx-http-flv-module-master --with-cc-opt="-Wno-error -Wno-deprecated-declarations" && make && make install
+# 配置nginx
+RUN cd /usr/local/nginx/conf && echo "rtmp{ \
+              server{ \
+                 listen 1935; \
+                 chunk_size 4096; \
+                 application flv-live{ \
+                     live on; \
+                     meta copy; \
+                     session_relay on; \
+                     drop_idle_publisher 10s; \
+                     sync 10ms; \
+                     record_append on; \
+                     record_path files/record; \
+                     record all; \
+                     on_publish http://127.0.0.1:8080/authServer/auth; \
+                 } \
+                 application hls1{ \
+                     live on; \
+                     hls on; \
+                     hls_path /usr/local/nginx/html/hls1; \
+                 } \
+                 application vod{ \
+                     play /usr/local/nginx/vod; \
+                 } \
+              } \
+          } \
+" >> nginx.conf
+# 启动nginx
+CMD /usr/local/nginx/sbin/nginx -g 'daemon off;'
+# 暴露端口
+EXPOSE 80
+EXPOSE 1935
+
+
+
+

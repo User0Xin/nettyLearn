@@ -61,13 +61,17 @@ public class LiveHandler extends SimpleChannelInboundHandler<Object> {
 
 
     public void playForHttp(Device device, ChannelHandlerContext ctx) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                play(device, ctx);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        // TODO: 考虑加锁
+        // 已经存在处理该设备的处理器，不需要重复创建，直接复用拉流
+        if(LiveServer.deviceContext.containsKey(device.getDeviceId())) {
+            LiveServer.deviceContext.get(device.getDeviceId()).addClient(ctx);
+            return;
+        }
+        VideoHandler videoHandler = new VideoHandler(device);
+        videoHandler.addClient(ctx);
+        LiveServer.deviceContext.put(device.getDeviceId(), videoHandler);
+
+        CompletableFuture.runAsync(videoHandler);
 
     }
 
