@@ -48,8 +48,8 @@
             alert("请输入deviceId");
             return;
         }
-        // let inputUrl = "http://localhost:8234/live?deviceId=" + deviceId;
-        let inputUrl = "test.flv";
+        let inputUrl = "http://localhost:8234/live?deviceId=" + deviceId;
+        // let inputUrl = "test.flv";
         playVideo(inputUrl, videoElement, index);
     }
 
@@ -71,7 +71,7 @@
             var player = flvjs.createPlayer({
                 type: 'flv',
                 isLive: true,
-                hasAudio: true,
+                hasAudio: false,
                 url: inputUrl,
                 enableStashBuffer: false,//关闭缓冲区
                 autoCleanupSourceBuffer: true,//自动清理缓存

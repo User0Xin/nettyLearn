@@ -21,16 +21,8 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 
-import org.bytedeco.ffmpeg.global.avcodec;
-import org.bytedeco.ffmpeg.global.avutil;
-import org.bytedeco.javacv.FFmpegFrameGrabber;
-import org.bytedeco.javacv.FFmpegFrameRecorder;
-import org.bytedeco.javacv.Frame;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -75,77 +67,77 @@ public class LiveHandler extends SimpleChannelInboundHandler<Object> {
 
     }
 
-    private void play(Device device, ChannelHandlerContext ctx) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start("创建grabber");
-        System.out.println("创建grabber");
-        FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(device.getRtmpUrl());
-        stopWatch.stop();
-        //拉流超时时间(10秒)
-        grabber.setOption("stimeout", "10000000");
-        grabber.setOption("threads", "1");
-        grabber.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
-        // 设置缓存大小，提高画质、减少卡顿花屏
-        grabber.setOption("buffer_size", "1024000");
-        // 读写超时，适用于所有协议的通用读写超时
-        grabber.setOption("rw_timeout", "15000000");
-        // 探测视频流信息，为空默认5000000微秒
-        // grabber.setOption("probesize", "5000000");
-        // 解析视频流信息，为空默认5000000微秒
-        //grabber.setOption("analyzeduration", "5000000");
-        stopWatch.start("启动grabber");
-        System.out.println("启动grabber");
-        grabber.start();
-        stopWatch.stop();
-        stopWatch.start("创建recorder");
-        System.out.println("创建recorder");
-        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(bos, grabber.getImageWidth(), grabber.getImageHeight(),
-            grabber.getAudioChannels());
-        stopWatch.stop();
-        recorder.setFormat("flv");
-        // 转码
-        recorder.setInterleaved(false);
-        recorder.setVideoOption("tune", "zerolatency");
-        recorder.setVideoOption("preset", "ultrafast");
-        recorder.setVideoOption("crf", "23");
-        recorder.setVideoOption("threads", "1");
-        recorder.setFrameRate(25);// 设置帧率
-        recorder.setGopSize(25);// 设置gop,与帧率相同
-        recorder.setVideoBitrate(1000 * 1000);// 码率1Mbps保证480p画面
-        // recorder.setVideoBitrate(grabber.getVideoBitrate()); // 设置视频比特率
-        System.out.println("码率"+grabber.getVideoBitrate());
-        recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
-        recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
-        recorder.setAudioCodec(avcodec.AV_CODEC_ID_AAC);
-        recorder.setOption("keyint_min", "25");  //gop最小间隔
-        recorder.setTrellis(1);
-        recorder.setMaxDelay(0);// 设置延迟
-        stopWatch.start("启动recorder");
-        System.out.println("启动recorder");
-        recorder.start();
-        stopWatch.stop();
-        stopWatch.start("flush grabber");
-        grabber.flush();
-        stopWatch.stop();
-        System.out.println(stopWatch.prettyPrint());
-        Frame frame;
-        long startTime = 0;
-        long lastTime = System.currentTimeMillis();
-        while ((frame = grabber.grab()) != null) {
-            lastTime = System.currentTimeMillis();
-            // recorder.setTimestamp((1000 * (System.currentTimeMillis() - startTime)));
-            recorder.record(frame);
-            if (bos.size() > 0) {
-                byte[] b = bos.toByteArray();
-                bos.reset();
-                ctx.writeAndFlush(Unpooled.copiedBuffer(b));
-            }
-        }
-        recorder.close();
-        grabber.close();
-        bos.close();
-    }
+    // private void play(Device device, ChannelHandlerContext ctx) throws IOException {
+    //     ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    //     StopWatch stopWatch = new StopWatch();
+    //     stopWatch.start("创建grabber");
+    //     System.out.println("创建grabber");
+    //     FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(device.getRtmpUrl());
+    //     stopWatch.stop();
+    //     //拉流超时时间(10秒)
+    //     grabber.setOption("stimeout", "10000000");
+    //     grabber.setOption("threads", "1");
+    //     grabber.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
+    //     // 设置缓存大小，提高画质、减少卡顿花屏
+    //     grabber.setOption("buffer_size", "1024000");
+    //     // 读写超时，适用于所有协议的通用读写超时
+    //     grabber.setOption("rw_timeout", "15000000");
+    //     // 探测视频流信息，为空默认5000000微秒
+    //     // grabber.setOption("probesize", "5000000");
+    //     // 解析视频流信息，为空默认5000000微秒
+    //     //grabber.setOption("analyzeduration", "5000000");
+    //     stopWatch.start("启动grabber");
+    //     System.out.println("启动grabber");
+    //     grabber.start();
+    //     stopWatch.stop();
+    //     stopWatch.start("创建recorder");
+    //     System.out.println("创建recorder");
+    //     FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(bos, grabber.getImageWidth(), grabber.getImageHeight(),
+    //         grabber.getAudioChannels());
+    //     stopWatch.stop();
+    //     recorder.setFormat("flv");
+    //     // 转码
+    //     recorder.setInterleaved(false);
+    //     recorder.setVideoOption("tune", "zerolatency");
+    //     recorder.setVideoOption("preset", "ultrafast");
+    //     recorder.setVideoOption("crf", "23");
+    //     recorder.setVideoOption("threads", "1");
+    //     recorder.setFrameRate(25);// 设置帧率
+    //     recorder.setGopSize(25);// 设置gop,与帧率相同
+    //     recorder.setVideoBitrate(1000 * 1000);// 码率1Mbps保证480p画面
+    //     // recorder.setVideoBitrate(grabber.getVideoBitrate()); // 设置视频比特率
+    //     System.out.println("码率"+grabber.getVideoBitrate());
+    //     recorder.setVideoCodec(avcodec.AV_CODEC_ID_H264);
+    //     recorder.setPixelFormat(avutil.AV_PIX_FMT_YUV420P);
+    //     recorder.setAudioCodec(avcodec.AV_CODEC_ID_AAC);
+    //     recorder.setOption("keyint_min", "25");  //gop最小间隔
+    //     recorder.setTrellis(1);
+    //     recorder.setMaxDelay(0);// 设置延迟
+    //     stopWatch.start("启动recorder");
+    //     System.out.println("启动recorder");
+    //     recorder.start();
+    //     stopWatch.stop();
+    //     stopWatch.start("flush grabber");
+    //     grabber.flush();
+    //     stopWatch.stop();
+    //     System.out.println(stopWatch.prettyPrint());
+    //     Frame frame;
+    //     long startTime = 0;
+    //     long lastTime = System.currentTimeMillis();
+    //     while ((frame = grabber.grab()) != null) {
+    //         lastTime = System.currentTimeMillis();
+    //         // recorder.setTimestamp((1000 * (System.currentTimeMillis() - startTime)));
+    //         recorder.record(frame);
+    //         if (bos.size() > 0) {
+    //             byte[] b = bos.toByteArray();
+    //             bos.reset();
+    //             ctx.writeAndFlush(Unpooled.copiedBuffer(b));
+    //         }
+    //     }
+    //     recorder.close();
+    //     grabber.close();
+    //     bos.close();
+    // }
 
     /**
      * 错误请求响应

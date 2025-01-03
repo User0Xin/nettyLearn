@@ -37,9 +37,9 @@ public class LiveServer implements CommandLineRunner {
     @Autowired
     private LiveHandler liveHandler;
     public static ConcurrentHashMap<String, VideoHandler> deviceContext = new ConcurrentHashMap<>();
-    // public final static String  YOUR_VIDEO_PATH = "D:\\CloudMusic\\MV\\01.mp4";
+    public final static String  YOUR_VIDEO_PATH = "D:\\CloudMusic\\MV\\01.mp4";
     // public final static String YOUR_VIDEO_PATH = "rtmp://localhost:1935/flv-live/test";
-    public final static String YOUR_VIDEO_PATH = "rtmp://172.27.75.231:1935/flv-live/test";
+    // public final static String YOUR_VIDEO_PATH = "rtmp://172.27.75.231:1935/flv-live/test";
     // public final static String  YOUR_VIDEO_PATH = "rtmp://localhost:1935/myapp/test";
     public final static int PORT = 8234;
 
